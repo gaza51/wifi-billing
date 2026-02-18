@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>User - Gaza WiFi Billing</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>User Dashboard</h1>
+      <nav>
+        <button id="logout" class="btn btn-secondary">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2>Your Bills</h2>
+      <table class="table" id="myBills"><thead><tr><th>ID</th><th>Period</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    const s = WifiBilling.getSession()
+    if(!s){ alert('Please login'); location.href='user-login.html' }
+    const userId = s.userId
+
+    function refresh(){
+      const rows = document.querySelector('#myBills tbody')
+      rows.innerHTML=''
+      const bills = WifiBilling.getBillsForUser(userId)
+      bills.forEach(b=>{
+        const tr = document.createElement('tr')
+        tr.innerHTML = `<td>${b.id}</td><td>${b.period}</td><td>${WifiBilling.fmtMoney(b.amount)}</td><td>${b.paid?'<span class="badge paid">Paid</span>':'<span class="badge due">Due</span>'}</td><td>${b.paid?'-':'<button class="btn pay" data-id="${b.id}">Pay</button>'}</td>`
+        rows.appendChild(tr)
+      })
+      Array.from(document.querySelectorAll('.pay')).forEach(btn=>btn.addEventListener('click', e=>{ WifiBilling.setBillPaid(+e.target.dataset.id,true); refresh() }))
+    }
+    refresh()
+
+    document.getElementById('logout').addEventListener('click', ()=>{ WifiBilling.logout(); location.href='user-login.html' })
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>User Login - WiFi Billing</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="container">
+    <div class="form">
+      <h2>User Login</h2>
+      <div class="row">
+        <label for="username">Username</label>
+        <input id="username" type="text" placeholder="jane">
+      </div>
+      <div class="row">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="password">
+      </div>
+      <div class="row">
+        <button id="loginBtn" class="btn btn-block">Sign in</button>
+      </div>
+      <hr>
+      <h3>Register</h3>
+      <div class="row">
+        <label for="r_username">Username</label>
+        <input id="r_username" type="text">
+      </div>
+      <div class="row">
+        <label for="r_email">Email</label>
+        <input id="r_email" type="email">
+      </div>
+      <div class="row">
+        <label for="r_password">Password</label>
+        <input id="r_password" type="password">
+      </div>
+      <div class="row">
+        <button id="regBtn" class="btn btn-secondary btn-block">Register</button>
+      </div>
+      <div class="small">Back to <a href="index.html">home</a></div>
+    </div>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById('loginBtn').addEventListener('click', ()=>{
+      const username = document.getElementById('username').value.trim()
+      const password = document.getElementById('password').value
+      try{ WifiBilling.login({username,password}); location.href='user.html' }catch(e){ alert(e.message) }
+    })
+
+    document.getElementById('regBtn').addEventListener('click', ()=>{
+      const username = document.getElementById('r_username').value.trim()
+      const email = document.getElementById('r_email').value.trim()
+      const password = document.getElementById('r_password').value
+      if(!username||!email||!password) return alert('Please fill fields')
+      try{ WifiBilling.register({username,password,email}); alert('Registered — please login'); }catch(e){ alert(e.message) }
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin -  Gaza WiFi Billing</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Admin</h1>
+      <nav>
+        <button id="logout" class="btn btn-secondary">Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="form">
+      <h2>Create Bill</h2>
+      <div class="row"><label>User ID</label><input id="b_userId" type="number" min="1"></div>
+      <div class="row"><label>Period (YYYY-MM)</label><input id="b_period" type="text" placeholder="2026-02"></div>
+      <div class="row"><label>Amount</label><input id="b_amount" type="number" step="0.01" placeholder="45.00"></div>
+      <div class="row"><label>Notes</label><input id="b_notes" type="text"></div>
+      <div class="row"><button id="createBill" class="btn btn-block">Create Bill</button></div>
+    </section>
+
+    <section style="margin-top:20px">
+      <h3>All Bills</h3>
+      <table class="table" id="billsTable"><thead><tr><th>ID</th><th>User</th><th>Period</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    // require admin
+    const s = WifiBilling.getSession()
+    if(!s || s.role!=='admin') { alert('Admin only'); location.href='admin-login.html' }
+
+    function refresh(){
+      const rows = document.querySelector('#billsTable tbody')
+      rows.innerHTML = ''
+      const bills = WifiBilling.getAllBills()
+      const users = JSON.parse(localStorage.getItem('wifi_billing_v1') || '{}').users || []
+      bills.forEach(b=>{
+        const user = users.find(u=>u.id===b.userId)
+        const tr = document.createElement('tr')
+        tr.innerHTML = `<td>${b.id}</td><td>${user?user.username:'#'+b.userId}</td><td>${b.period}</td><td>${WifiBilling.fmtMoney(b.amount)}</td><td>${b.paid?'<span class="badge paid">Paid</span>':'<span class="badge due">Due</span>'}</td><td class="actions"><button data-id="${b.id}" class="btn mark">Mark Paid</button><button data-id="${b.id}" class="btn btn-secondary del">Delete</button></td>`
+        rows.appendChild(tr)
+      })
+      Array.from(document.querySelectorAll('.mark')).forEach(btn=>btn.addEventListener('click', e=>{ WifiBilling.setBillPaid(+e.target.dataset.id,true); refresh() }))
+      Array.from(document.querySelectorAll('.del')).forEach(btn=>btn.addEventListener('click', e=>{ if(confirm('Delete?')){ WifiBilling.deleteBill(+e.target.dataset.id); refresh() }}))
+    }
+    refresh()
+
+    document.getElementById('createBill').addEventListener('click', ()=>{
+      const userId = Number(document.getElementById('b_userId').value)
+      const period = document.getElementById('b_period').value.trim()
+      const amount = document.getElementById('b_amount').value
+      const notes = document.getElementById('b_notes').value
+      if(!userId||!period||!amount) return alert('Fill fields')
+      try{ WifiBilling.createBill({userId,period,amount,notes}); alert('Created'); refresh() }catch(e){ alert(e.message) }
+    })
+
+    document.getElementById('logout').addEventListener('click', ()=>{ WifiBilling.logout(); location.href='admin-login.html' })
+  </script>
+</body>
+</html>
