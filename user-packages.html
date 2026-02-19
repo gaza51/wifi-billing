@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WiFi Packages - Subscription</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1><a href="index.html" style="color:inherit;text-decoration:none">WiFi Billing</a></h1>
+      <nav class="nav-links">
+        <a href="user.html">Dashboard</a>
+        <a href="user-packages.html" class="active">Packages</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="pricing-container">
+    <div class="pricing-header">
+      <h2>WiFi Subscription Packages</h2>
+      <p>Choose a package and enjoy instant WiFi access. Limited to 1 device per subscription.</p>
+    </div>
+
+    <div class="pricing-grid packages-grid">
+      <div class="pricing-card package-option">
+        <h3>1 Hour Pass</h3>
+        <div class="price">
+          <span class="amount">20</span>
+          <span class="currency">KES</span>
+        </div>
+        <ul class="features">
+          <li>1 hour WiFi access</li>
+          <li>Full speed internet</li>
+          <li>1 device limit</li>
+          <li>Valid for 24 hours</li>
+        </ul>
+        <button class="btn btn-package" onclick="subscribe('1_hour', 20)">Subscribe Now</button>
+      </div>
+
+      <div class="pricing-card package-option">
+        <h3>3 Hours Pass</h3>
+        <div class="price">
+          <span class="amount">30</span>
+          <span class="currency">KES</span>
+        </div>
+        <ul class="features">
+          <li>3 hours WiFi access</li>
+          <li>Full speed internet</li>
+          <li>1 device limit</li>
+          <li>Valid for 48 hours</li>
+        </ul>
+        <button class="btn btn-package" onclick="subscribe('3_hours', 30)">Subscribe Now</button>
+      </div>
+
+      <div class="pricing-card package-option">
+        <h3>1 Day Pass</h3>
+        <div class="price">
+          <span class="amount">40</span>
+          <span class="currency">KES</span>
+        </div>
+        <ul class="features">
+          <li>24 hours WiFi access</li>
+          <li>Full speed internet</li>
+          <li>1 device limit</li>
+          <li>Valid for 7 days</li>
+        </ul>
+        <button class="btn btn-package" onclick="subscribe('1_day', 40)">Subscribe Now</button>
+      </div>
+
+      <div class="pricing-card package-option featured">
+        <div class="featured-badge">Best Value</div>
+        <h3>1 Week Pass</h3>
+        <div class="price">
+          <span class="amount">250</span>
+          <span class="currency">KES</span>
+        </div>
+        <ul class="features">
+          <li>7 days unlimited access</li>
+          <li>Full speed internet</li>
+          <li>1 device limit</li>
+          <li>Valid for 30 days</li>
+        </ul>
+        <button class="btn btn-package" onclick="subscribe('1_week', 250)">Subscribe Now</button>
+      </div>
+
+      <div class="pricing-card package-option">
+        <h3>Monthly Subscription</h3>
+        <div class="price">
+          <span class="amount">500</span>
+          <span class="currency">KES</span>
+        </div>
+        <ul class="features">
+          <li>30 days unlimited access</li>
+          <li>Full speed internet</li>
+          <li>1 device limit</li>
+          <li>Auto-renews monthly</li>
+        </ul>
+        <button class="btn btn-package" onclick="subscribe('monthly', 500)">Subscribe Now</button>
+      </div>
+    </div>
+
+    <div class="subscription-info">
+      <h3>Active Subscription</h3>
+      <div class="current-subscription">
+        <p id="subscriptionStatus">Loading...</p>
+        <div id="subscriptionDetails" style="margin-top:16px;display:none;">
+          <p><strong>Package:</strong> <span id="packageName"></span></p>
+          <p><strong>Amount:</strong> <span id="packageAmount"></span> KES</p>
+          <p><strong>Expires:</strong> <span id="expiryDate"></span></p>
+          <button class="btn btn-secondary" onclick="cancelSubscription()" style="margin-top:12px;">Cancel Subscription</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">proudly built and sponsored by Gaza tech hub.</div>
+      <div class="contact-list">
+        <div class="contact-item"><a href="contact.html">Contact form</a></div>
+        <div class="contact-item"><a class="whatsapp-btn" href="https://wa.me/qr/7NFZZEY55QKGK1" target="_blank" rel="noopener">Support on WhatsApp</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    const packageNames = {
+      '1_hour': '1 Hour Pass',
+      '3_hours': '3 Hours Pass',
+      '1_day': '1 Day Pass',
+      '1_week': '1 Week Pass',
+      'monthly': 'Monthly Subscription'
+    };
+
+    function subscribe(packageId, amount) {
+      const session = JSON.parse(localStorage.getItem('wifi_session'));
+      if (!session) {
+        alert('Please login first');
+        location.href = 'user-login.html';
+        return;
+      }
+
+      const state = readState();
+      const userIndex = state.users.findIndex(u => u.id === session.userId);
+      
+      if (userIndex === -1) {
+        alert('User not found');
+        return;
+      }
+
+      // Calculate expiry date based on package
+      const expiryDate = new Date();
+      switch(packageId) {
+        case '1_hour':
+          expiryDate.setHours(expiryDate.getHours() + 1);
+          break;
+        case '3_hours':
+          expiryDate.setHours(expiryDate.getHours() + 3);
+          break;
+        case '1_day':
+          expiryDate.setDate(expiryDate.getDate() + 1);
+          break;
+        case '1_week':
+          expiryDate.setDate(expiryDate.getDate() + 7);
+          break;
+        case 'monthly':
+          expiryDate.setMonth(expiryDate.getMonth() + 1);
+          break;
+      }
+
+      // Save subscription
+      if (!state.users[userIndex].subscription) {
+        state.users[userIndex].subscription = {};
+      }
+
+      state.users[userIndex].subscription = {
+        packageId: packageId,
+        packageName: packageNames[packageId],
+        amount: amount,
+        startDate: new Date().toISOString(),
+        expiryDate: expiryDate.toISOString(),
+        status: 'active'
+      };
+
+      writeState(state);
+      alert(`Successfully subscribed to ${packageNames[packageId]}!`);
+      loadSubscriptionStatus();
+    }
+
+    function loadSubscriptionStatus() {
+      const session = JSON.parse(localStorage.getItem('wifi_session'));
+      if (!session) {
+        location.href = 'user-login.html';
+        return;
+      }
+
+      const state = readState();
+      const user = state.users.find(u => u.id === session.userId);
+
+      const statusDiv = document.getElementById('subscriptionStatus');
+      const detailsDiv = document.getElementById('subscriptionDetails');
+
+      if (user && user.subscription && user.subscription.status === 'active') {
+        const expiryDate = new Date(user.subscription.expiryDate);
+        const now = new Date();
+
+        if (expiryDate > now) {
+          statusDiv.textContent = `✓ You have an active subscription`;
+          document.getElementById('packageName').textContent = user.subscription.packageName;
+          document.getElementById('packageAmount').textContent = user.subscription.amount;
+          document.getElementById('expiryDate').textContent = expiryDate.toLocaleString();
+          detailsDiv.style.display = 'block';
+        } else {
+          statusDiv.textContent = `⚠ Your subscription has expired. Please renew.`;
+          detailsDiv.style.display = 'none';
+        }
+      } else {
+        statusDiv.textContent = `No active subscription. Choose a package below.`;
+        detailsDiv.style.display = 'none';
+      }
+    }
+
+    function cancelSubscription() {
+      if (!confirm('Are you sure you want to cancel your subscription?')) return;
+
+      const session = JSON.parse(localStorage.getItem('wifi_session'));
+      const state = readState();
+      const userIndex = state.users.findIndex(u => u.id === session.userId);
+
+      if (userIndex !== -1) {
+        state.users[userIndex].subscription = null;
+        writeState(state);
+        alert('Subscription cancelled');
+        loadSubscriptionStatus();
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('wifi_session');
+      location.href = 'index.html';
+    }
+
+    // Load subscription status on page load
+    document.addEventListener('DOMContentLoaded', loadSubscriptionStatus);
+  </script>
+</body>
+</html>
